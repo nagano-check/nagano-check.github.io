@@ -8,94 +8,108 @@
 </head>
 <body>
 
-    <!-- 모바일 햄버거 버튼 -->
-    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="메뉴">
-        <span></span><span></span><span></span>
-    </button>
-
-    <!-- 모바일 사이드바 -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-inner" id="sidebarContent"></div>
+    <!-- 모바일 바텀시트 -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+    <div class="bottom-sheet" id="bottomSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-body" id="sheetBody"></div>
     </div>
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- 헤더 -->
+    <!-- ── 헤더 ── -->
     <header>
         <div class="header-inner">
-            <h1 onclick="goHome()">농담곰 콜렉션</h1>
-            <div id="navMenuContainer"></div>
+
+            <!-- 로고 -->
+            <button class="logo" onclick="goHome()">농담곰 콜렉션</button>
+
+            <!-- PC: 수집률 (중앙) -->
+            <div class="progress-display">
+                <div class="progress-text-group">
+                    <span class="progress-pct" id="progressPct">0%</span>
+                    <span class="progress-frac" id="progressFrac">0 / 0</span>
+                </div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+            </div>
+
+            <!-- PC: 우측 액션 -->
+            <div class="header-actions">
+                <button class="header-action-btn primary" onclick="generateImage()">이미지 저장</button>
+                <button class="header-action-btn" onclick="resetRecords()">기록 초기화</button>
+            </div>
+
+            <!-- 모바일: 수집률 -->
+            <div class="mobile-progress">
+                <span class="m-pct" id="mProgressPct">0%</span>
+                <span class="m-frac" id="mProgressFrac">0 / 0</span>
+            </div>
+
+            <!-- 모바일: 필터 버튼 (오른쪽 끝) -->
+            <button class="mobile-filter-btn" onclick="openSheet()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="4" y1="6"  x2="20" y2="6"/>
+                    <line x1="8" y1="12" x2="20" y2="12"/>
+                    <line x1="12" y1="18" x2="20" y2="18"/>
+                </svg>
+                필터
+            </button>
+
         </div>
     </header>
 
-    <!-- 본문 -->
+    <!-- ── PC 필터 스트립 ── -->
+    <div class="filter-strip" id="filterStrip">
+        <div class="filter-strip-inner" id="filterNav"></div>
+    </div>
+
+    <!-- ── 본문 ── -->
     <main>
         <div id="listContainer">
             <div class="status-msg">
-                <img src="img/loading.gif" alt="로딩중"><br>
-                데이터 불러오는 중...
+                <img src="img/loading.gif" alt="로딩중">
+                <p>불러오는 중...</p>
             </div>
         </div>
 
+        <!-- 이미지 미리보기 -->
         <div id="previewContainer" style="display:none;">
-            <div class="preview-card">
-                <div class="preview-header">
-                    <span class="preview-label">이미지 미리보기</span>
-                    <button class="btn btn-primary btn-sm" onclick="downloadImage()">저장하기</button>
-                </div>
-
-                <div class="preview-options">
-                    <div class="option-row">
-                        <label class="option-item">
+            <div class="preview-wrap">
+                <div class="preview-toolbar">
+                    <div class="preview-options">
+                        <label class="opt-toggle">
                             <input type="checkbox" id="optTitleCheck" checked>
                             <span>타이틀</span>
                         </label>
-                        <input type="text" id="optTitleInput" value="농담곰 수집 리스트" class="title-input">
-                    </div>
-                    <div class="option-row">
-                        <span class="option-label">상품명</span>
-                        <label class="option-item">
+                        <input type="text" id="optTitleInput" value="농담곰 수집 리스트" class="opt-text-input">
+                        <div class="opt-divider"></div>
+                        <label class="opt-toggle">
                             <input type="checkbox" id="optNameKoCheck" checked>
                             <span>한글</span>
                         </label>
-                        <label class="option-item">
+                        <label class="opt-toggle">
                             <input type="checkbox" id="optNameJpCheck">
                             <span>日本語</span>
                         </label>
-                        <label class="option-item">
+                        <label class="opt-toggle">
                             <input type="checkbox" id="optPriceCheck">
                             <span>가격</span>
                         </label>
                     </div>
+                    <div class="preview-actions">
+                        <button class="btn-ghost-sm" onclick="closePreview()">← 돌아가기</button>
+                        <button class="btn-primary-sm" onclick="downloadImage()">이미지 저장</button>
+                    </div>
                 </div>
-
-                <div class="preview-img-box">
-                    <img id="imgCollection" src="" alt="Collection Preview">
+                <div class="preview-canvas-wrap">
+                    <img id="imgCollection" src="" alt="미리보기">
                 </div>
-            </div>
-
-            <div class="preview-footer">
-                <button class="btn btn-ghost" onclick="closePreview()">← 돌아가기</button>
             </div>
         </div>
     </main>
 
-    <!-- 하단 수집률 바 -->
-    <div class="floating-progress">
-        <div class="progress-info">
-            <span>수집률</span>
-            <span id="progressText" class="progress-count">0/0 (0%)</span>
-        </div>
-        <div class="progress-track">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-    </div>
-
-    <!-- 상단 이동 버튼 -->
-    <div class="fab-container">
-        <button class="fab" onclick="scrollToTop()" title="맨 위로">
-            <img src="img/top.png" alt="Top" onerror="this.parentNode.innerHTML='↑'">
-        </button>
-    </div>
+    <!-- FAB -->
+    <button class="fab" onclick="scrollToTop()" title="맨 위로">↑</button>
 
     <script src="script.js"></script>
 </body>
