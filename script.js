@@ -9,6 +9,7 @@ let activeFilters      = { country: 'all', character: '농담곰', group: 'all' 
 const listContainer    = document.getElementById('listContainer');
 const previewContainer = document.getElementById('previewContainer');
 const filterNav        = document.getElementById('filterNav');
+const filterActions    = document.getElementById('filterActions');
 const sheetBody        = document.getElementById('sheetBody');
 const optTitleCheck    = document.getElementById('optTitleCheck');
 const optTitleInput    = document.getElementById('optTitleInput');
@@ -72,15 +73,9 @@ function tagHTML(v) {
         onclick="setFilter('group','${v}')">${v}</button>`;
 }
 
+/* 필터 버튼 묶음 (중앙) */
 function buildNavHTML() {
     return `
-        <button class="reset-btn" onclick="resetFilters()" title="필터 초기화">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/>
-            </svg>
-        </button>
-        <div class="filter-sep"></div>
         ${flagHTML('kr','한국')}${flagHTML('jp','일본')}${flagHTML('cn','중국')}${flagHTML('tw','대만')}
         <div class="filter-sep"></div>
         ${charHTML('농담곰','img/icon/characters/icon_kuma.png','농담곰')}
@@ -92,6 +87,36 @@ function buildNavHTML() {
     `;
 }
 
+/* 우측 액션 버튼 (↺ 🗑 📷) */
+function buildActionsHTML() {
+    return `
+        <!-- 필터 초기화 -->
+        <button class="icon-action-btn reset" onclick="resetFilters()" title="필터 초기화">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+            </svg>
+        </button>
+        <!-- 기록 초기화 (휴지통) -->
+        <button class="icon-action-btn danger" onclick="resetRecords()" title="기록 초기화">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+        </button>
+        <!-- 이미지 저장 (카메라) -->
+        <button class="icon-action-btn camera" onclick="generateImage()" title="이미지 저장">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+            </svg>
+        </button>
+    `;
+}
+
+/* 모바일 바텀시트 */
 function buildSheetHTML() {
     return `
         <div class="sheet-row">
@@ -116,18 +141,19 @@ function buildSheetHTML() {
             </div>
         </div>
         <div class="sheet-actions">
-            <button class="header-action-btn primary" onclick="generateImage(); closeSheet()">이미지 저장</button>
-            <button class="header-action-btn" onclick="resetFilters(); closeSheet()">필터 초기화</button>
+            <button class="sheet-action-btn primary" onclick="generateImage(); closeSheet()">이미지 저장</button>
+            <button class="sheet-action-btn" onclick="resetFilters(); closeSheet()">필터 초기화</button>
         </div>
-        <div class="sheet-actions" style="padding-top:0; border-top:none;">
-            <button class="header-action-btn" style="flex:1; color:#c0392b; border-color:#e8c0bb;" onclick="resetRecords(); closeSheet()">기록 초기화</button>
+        <div class="sheet-actions" style="padding-top:0;border-top:none;">
+            <button class="sheet-action-btn danger" style="flex:1;" onclick="resetRecords(); closeSheet()">기록 초기화</button>
         </div>
     `;
 }
 
 function renderFilters() {
-    filterNav.innerHTML = buildNavHTML();
-    sheetBody.innerHTML = buildSheetHTML();
+    filterNav.innerHTML     = buildNavHTML();
+    filterActions.innerHTML = buildActionsHTML();
+    sheetBody.innerHTML     = buildSheetHTML();
 }
 
 /* ── 필터 동작 ── */
@@ -214,11 +240,11 @@ function updateProgress() {
     const owned = productData.filter(i => ownedItems.has(i.id)).length;
     const total = productData.length;
     const pct   = Math.round((owned / total) * 100);
-    // PC
-    document.getElementById('progressPct').textContent   = `${pct}%`;
-    document.getElementById('progressFrac').textContent  = `${owned} / ${total}`;
-    document.getElementById('progressBar').style.width   = `${pct}%`;
-    // 모바일
+    // PC 플로팅 바
+    document.getElementById('progressPct').textContent  = `${pct}%`;
+    document.getElementById('progressFrac').textContent = `${owned} / ${total}`;
+    document.getElementById('progressBar').style.width  = `${pct}%`;
+    // 모바일 헤더
     document.getElementById('mProgressPct').textContent  = `${pct}%`;
     document.getElementById('mProgressFrac').textContent = `${owned} / ${total}`;
 }
@@ -295,7 +321,7 @@ function closePreview() {
     document.getElementById('imgCollection').src = '';
 }
 
-/* ── Canvas (라이트 테마) ── */
+/* ── Canvas ── */
 async function drawCanvas(items) {
     const cvs = document.createElement('canvas');
     const ctx  = cvs.getContext('2d');
@@ -322,99 +348,87 @@ async function drawCanvas(items) {
     cvs.width  = PAD*2 + CARD_W*COL + GAP*(COL-1);
     cvs.height = PAD*2 + CARD_H*ROW + GAP*(ROW-1) + TITLE_H;
 
-    /* 배경 */
     ctx.fillStyle = '#fafafa';
     ctx.fillRect(0, 0, cvs.width, cvs.height);
 
-    /* 타이틀 */
     let startY = PAD;
     if (showTitle) {
-        ctx.font         = "bold 36px 'Paperlogy', sans-serif";
-        ctx.fillStyle    = '#182558';
-        ctx.textAlign    = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(titleText, cvs.width/2, PAD + 20);
-        /* 구분선 */
-        ctx.fillStyle   = '#e4e4e8';
-        ctx.fillRect(PAD, PAD + 48, cvs.width - PAD*2, 1);
+        ctx.font='bold 36px \'Paperlogy\', sans-serif';
+        ctx.fillStyle='#182558'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(titleText, cvs.width/2, PAD+20);
+        ctx.fillStyle='#e4e4e8';
+        ctx.fillRect(PAD, PAD+48, cvs.width-PAD*2, 1);
         startY += TITLE_H;
     }
 
     const loadImg = src => new Promise(res => {
-        const i = new Image(); i.crossOrigin = 'Anonymous';
+        const i=new Image(); i.crossOrigin='Anonymous';
         i.src=src; i.onload=()=>res(i); i.onerror=()=>res(null);
     });
-
     const getLines = (txt, maxW) => {
         if (!txt) return [];
-        const chars = txt.split(''); const lines=[]; let line=chars[0]||'';
-        for (let i=1; i<chars.length; i++) {
-            if (ctx.measureText(line+chars[i]).width < maxW) line+=chars[i];
+        const chars=txt.split(''); const lines=[]; let line=chars[0]||'';
+        for (let i=1;i<chars.length;i++) {
+            if (ctx.measureText(line+chars[i]).width<maxW) line+=chars[i];
             else { lines.push(line); line=chars[i]; }
         }
         lines.push(line); return lines;
     };
 
-    for (let i=0; i<items.length; i++) {
-        const item = items[i];
-        const col  = i % COL, row = Math.floor(i/COL);
-        const x    = PAD + col*(CARD_W+GAP);
-        const y    = startY + row*(CARD_H+GAP);
-        const R    = 12;
+    for (let i=0;i<items.length;i++) {
+        const item=items[i];
+        const col=i%COL, row=Math.floor(i/COL);
+        const x=PAD+col*(CARD_W+GAP), y=startY+row*(CARD_H+GAP);
+        const R=12;
 
-        /* 카드 배경 */
         ctx.save();
         ctx.shadowColor='rgba(0,0,0,0.08)'; ctx.shadowBlur=12; ctx.shadowOffsetY=3;
         ctx.fillStyle='#ffffff';
         ctx.beginPath(); ctx.roundRect(x,y,CARD_W,CARD_H,R); ctx.fill();
         ctx.restore();
 
-        /* 이미지 */
-        const img = await loadImg(item.image);
+        const img=await loadImg(item.image);
         if (img) {
             ctx.save(); ctx.beginPath();
             if (showText||showPrice) ctx.roundRect(x,y,CARD_W,IMG_H,[R,R,0,0]);
             else ctx.roundRect(x,y,CARD_W,IMG_H,R);
             ctx.clip();
-            const asp=img.width/img.height; let dw=CARD_W, dh=IMG_H;
-            if (asp>1) dw=IMG_H*asp; else dh=CARD_W/asp;
-            ctx.drawImage(img, x+(CARD_W-dw)/2, y+(IMG_H-dh)/2, dw, dh);
+            const asp=img.width/img.height; let dw=CARD_W,dh=IMG_H;
+            if(asp>1) dw=IMG_H*asp; else dh=CARD_W/asp;
+            ctx.drawImage(img,x+(CARD_W-dw)/2,y+(IMG_H-dh)/2,dw,dh);
             ctx.restore();
         }
 
-        /* 텍스트 */
         if (showText||showPrice) {
             ctx.textAlign='center'; ctx.textBaseline='middle';
             let lines=[];
             if (showText) {
-                ctx.font="bold 14px 'Pretendard', sans-serif";
+                ctx.font='bold 14px \'Pretendard\', sans-serif';
                 const name=(showNameJp&&item.nameJp?.trim())?item.nameJp:item.nameKo;
-                lines=getLines(name, CARD_W-16);
-                if (lines.length>2) { lines=lines.slice(0,2); lines[1]=lines[1].slice(0,-1)+'…'; }
+                lines=getLines(name,CARD_W-16);
+                if(lines.length>2){lines=lines.slice(0,2);lines[1]=lines[1].slice(0,-1)+'…';}
             }
-            const contentH = lines.length*NAME_LH + (showPrice ? PRICE_H+(showText?4:0) : 0);
-            const midY = y + IMG_H + textH/2;
-            let drawY  = midY - contentH/2 + NAME_LH/2;
-
+            const contentH=lines.length*NAME_LH+(showPrice?PRICE_H+(showText?4:0):0);
+            const midY=y+IMG_H+textH/2;
+            let drawY=midY-contentH/2+NAME_LH/2;
             if (showText) {
-                ctx.font="bold 14px 'Pretendard', sans-serif"; ctx.fillStyle='#1a1a2e';
-                lines.forEach(l => { ctx.fillText(l, x+CARD_W/2, drawY); drawY+=NAME_LH; });
+                ctx.font='bold 14px \'Pretendard\', sans-serif'; ctx.fillStyle='#1a1a2e';
+                lines.forEach(l=>{ctx.fillText(l,x+CARD_W/2,drawY);drawY+=NAME_LH;});
             }
             if (showPrice) {
-                if (showText) drawY+=4;
-                ctx.font="13px 'Pretendard', sans-serif"; ctx.fillStyle='#182558';
-                ctx.fillText(item.price||'-', x+CARD_W/2, drawY);
+                if(showText) drawY+=4;
+                ctx.font='13px \'Pretendard\', sans-serif'; ctx.fillStyle='#182558';
+                ctx.fillText(item.price||'-',x+CARD_W/2,drawY);
             }
         }
     }
-    return cvs.toDataURL('image/jpeg', 0.92);
+    return cvs.toDataURL('image/jpeg',0.92);
 }
 
-/* ── 다운로드 ── */
 function downloadImage() {
-    const img = document.getElementById('imgCollection');
-    if (!img?.src) return;
-    const a = document.createElement('a');
+    const img=document.getElementById('imgCollection');
+    if(!img?.src) return;
+    const a=document.createElement('a');
     a.download='nongdam_collection.jpg'; a.href=img.src; a.click();
 }
 
